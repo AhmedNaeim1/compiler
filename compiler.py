@@ -6,30 +6,32 @@ def check_variables(list_of_tokens, index):
         count = index + 1
         while True:
             if list_of_tokens[count + 1][0] == "NUMBER" or list_of_tokens[count + 1][0] == "VARIABLE":
-
                 count += 1
                 if list_of_tokens[count + 1][0] == "SEMICOLON":
 
                     count += 1
-                    return "Valid"
+                    print("Valid syntax of variable")
+                    return count
                 elif list_of_tokens[count + 1][0] == "ARITHMETIC_OPERATOR":
-
                     count += 1
                 else:
-                    return "Invalid"
-
+                    print("Invalid syntax of a variable")
+                    return count
             else:
-                return "Invalid"
+                print("Invalid")
+                return count
     elif list_of_tokens[index + 1][0] == "SEMICOLON":
-        return "Valid"
+        print("Valid")
+        return index + 1
     elif list_of_tokens[index - 1][0] == "SEMICOLON" and list_of_tokens[index + 1][0] != "ASSIGNMENT_OPERATOR":
-        return "Invalid"
+        print("Invalid")
+        return index + 1
     else:
         return "Variable in use"
 
 
-def check_condition(list_of_token, index):
-    count = index + 1
+def check_condition(list_of_token, index, forOrIf):
+    count = index
     while True:
         if list_of_token[count + 1][0] == "VARIABLE":
             if list_of_token[count + 1][1] in indicated_variables:
@@ -41,30 +43,34 @@ def check_condition(list_of_token, index):
                         count += 1
                         if list_of_token[count + 1][0] == "LOGICAL_OPERATOR":
                             count += 1
-                        elif list_of_token[count + 1][0] == "CLOSED_BRACKET":
-                            print("Valid")
-                            break
+                        elif forOrIf == "for":
+                            if list_of_token[count + 1][0] == "SEMICOLON":
+                                return count + 1
+                        elif forOrIf == "if":
+                            if list_of_token[count + 1][0] == "CLOSED_BRACKET":
+                                print("Valid")
+                                return count + 1
                         else:
-                            print("Invalid")
-                            break
+                            print("Forgot the closed bracket or semicolon")
+                            return count + 1
                     else:
-                        print("Invalid")
-                        break
+                        print("There should be a number or variable here to compare with")
+                        return count + 1
                 else:
-                    print("Invalid")
-                    break
+                    print("missing comparison operator")
+                    return count + 1
+            else:
+                print("Variable " + str(list_of_token[count + 1][1]) + " is not defined")
+                return count + 1
         else:
-            print("Invalid variable")
-            break
+            print("Expected a variable")
+            return count + 1
 
 
 source_code = """
-int x=5;
-x=10;
-x=10+9+x+5;
-int y;
-if(x>10)
-if(x>=10||y<5){}"""
+int x;
+if(x=5)
+for(x=0;x<10;x++){x=10}"""
 
 token = lexical_analysis(source_code)
 print("\nTokens:")
@@ -72,35 +78,90 @@ variables = []
 indicated_variables = []
 data_type = []
 reserved_words = []
-for index_of_variable, i in enumerate(token):
+index_of_variable = 0
+while index_of_variable < len(token):
+    i = token[index_of_variable]
     if i[0] == "VARIABLE":
         if i[1] in indicated_variables:
             variables.append(i[1])
-            # print("Index:", index_of_variable)
-            print(check_variables(token, index_of_variable))
+            index_of_variable = check_variables(token, index_of_variable)
         else:
             if token[index_of_variable - 1][0] == "DATA_TYPE":
                 data_type.append(token[index_of_variable - 1][1])
                 indicated_variables.append(i[1])
                 variables.append(i[1])
-                # print("Here. Index:", index_of_variable)
-                print(check_variables(token, index_of_variable))
+                index_of_variable = check_variables(token, index_of_variable)
             else:
                 print(i[1], "is not an indicated variable")
     if i[0] == "RESERVED_WORD":
         if i[1] == "for":
             reserved_words.append(i[1])
-            continue
-        elif i[1] == "while":
-            reserved_words.append(i[1])
-            continue
-        elif i[1] == "if":
+            count_index = index_of_variable + 1
+            if token[count_index][0] == "OPENED_BRACKET":
+                count_index += 1
+                index_of_variable = count_index
+                if token[count_index][0] == "VARIABLE":
+                    if token[count_index][1] in indicated_variables:
+                        count_index += 1
+                        index_of_variable = count_index
+                        if token[count_index][0] == "ASSIGNMENT_OPERATOR":
+                            count_index += 1
+                            index_of_variable = count_index
+                            if token[count_index][0] == "NUMBER":
+                                count_index += 1
+                                index_of_variable = count_index
+                                if token[count_index][0] == "SEMICOLON":
+                                    count_index = check_condition(token, count_index, "for")
+                                    count_index += 1
+                                    index_of_variable = count_index
+                                    if token[count_index][0] == "VARIABLE":
+                                        count_index += 1
+                                        index_of_variable = count_index
+                                        if (token[count_index][0] == "INCREMENT_OPERATOR" or token[count_index][0]
+                                                == "DECREMENT_OPERATOR"):
+                                            count_index += 1
+                                            index_of_variable = count_index
+                                            if token[count_index][0] == "CLOSED_BRACKET":
+                                                index_of_variable = count_index + 1
+                                                print("Valid")
+                                            else:
+                                                print("Forgot bracket")
+                                                index_of_variable = count_index
+                                        else:
+                                            print("Invalid, expected an incremenet or decrement operator")
+                                            index_of_variable = count_index
+                                    else:
+                                        print("Invalid, expected a variable")
+                                        index_of_variable = count_index
+                                else:
+                                    print("Invalid, expected a semicolon")
+                                    index_of_variable = count_index
+                            else:
+                                print("Invalid, expected a number")
+                                index_of_variable = count_index
+                        else:
+                            print("Invalid, expected an equal sign")
+                            index_of_variable = count_index
+                    else:
+                        print("undefined variable")
+                        index_of_variable = count_index
+                else:
+                    print("Invalid, expected a variable")
+                    index_of_variable = count_index
+            else:
+                print("Invalid, expected an open bracket")
+                index_of_variable = count_index
+        elif i[1] == "while" or "if" or "else if":
             reserved_words.append(i[1])
             if token[index_of_variable + 1][0] == "OPENED_BRACKET":
-                check_condition(token, index_of_variable)
-
+                count_index = check_condition(token, index_of_variable + 1, "if")
+                index_of_variable = count_index + 1
             else:
                 print("wrong syntax")
+                index_of_variable += 1
                 break
+    else:
+        print(i)
+        index_of_variable += 1
 
 print(indicated_variables, data_type)

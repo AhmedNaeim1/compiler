@@ -5,6 +5,8 @@ def lexical_analysis(code):
     tokens = []
     token_types = {
         'LOGICAL_OPERATOR': r'(\&\&|\|\|)',
+        'INCREMENT_OPERATOR': r'\+\+',
+        'DECREMENT_OPERATOR': r'\-\-',
         'ARITHMETIC_OPERATOR': r'(\+|\-|\*|\/|%)',
         'OPENED_BRACKET': r'(\()',
         'CLOSED_BRACKET': r'(\))',
@@ -14,8 +16,6 @@ def lexical_analysis(code):
         'SEMICOLON': r';',
         'COMPARISON_OPERATOR': r'(\==|\!=|<=|>=|<|>)',
         'ASSIGNMENT_OPERATOR': r'=',
-        'INCREMENT_OPERATOR': r'\+\+',
-        'DECREMENT_OPERATOR': r'\-\-',
         'RESERVED_WORD': r'\b(for|while|if|do|return|break|continue|end|else|else if)\b',
         'DATA_TYPE': r'\b(int|float|str|bool|double|char)\b',
         'NUMBER': r'\d+(\.\d+)?',
