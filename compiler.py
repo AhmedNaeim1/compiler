@@ -30,7 +30,7 @@ def check_variables(list_of_tokens, index):
         return "Variable in use"
 
 
-def check_condition(list_of_token, index, forOrIf):
+def check_condition(list_of_token, index, fororif):
     count = index
     while True:
         if list_of_token[count + 1][0] == "VARIABLE":
@@ -43,13 +43,18 @@ def check_condition(list_of_token, index, forOrIf):
                         count += 1
                         if list_of_token[count + 1][0] == "LOGICAL_OPERATOR":
                             count += 1
-                        elif forOrIf == "for":
+                        elif fororif == "for":
                             if list_of_token[count + 1][0] == "SEMICOLON":
                                 return count + 1
-                        elif forOrIf == "if":
+                        elif fororif == "if":
                             if list_of_token[count + 1][0] == "CLOSED_BRACKET":
-                                print("Valid")
-                                return count + 1
+                                if list_of_token[count + 2][0] == "OPEN_CURLY_BRACKET":
+                                    brackets.append(list_of_token[count + 2][1])
+                                    print("Valid")
+                                    return count + 2
+                                else:
+                                    print("Forgot opened curly bracket")
+                                    return count + 1
                         else:
                             print("Forgot the closed bracket or semicolon")
                             return count + 1
@@ -69,7 +74,7 @@ def check_condition(list_of_token, index, forOrIf):
 
 source_code = """
 int x;
-if(x=5)
+if(x==5){}
 for(x=0;x<10;x++){x=10}"""
 
 token = lexical_analysis(source_code)
@@ -78,6 +83,7 @@ variables = []
 indicated_variables = []
 data_type = []
 reserved_words = []
+brackets = []
 index_of_variable = 0
 while index_of_variable < len(token):
     i = token[index_of_variable]
@@ -122,13 +128,20 @@ while index_of_variable < len(token):
                                             count_index += 1
                                             index_of_variable = count_index
                                             if token[count_index][0] == "CLOSED_BRACKET":
-                                                index_of_variable = count_index + 1
-                                                print("Valid")
+                                                count_index += 1
+                                                index_of_variable = count_index
+                                                if token[count_index][0] == "OPEN_CURLY_BRACKET":
+                                                    index_of_variable = count_index + 1
+                                                    brackets.append(token[count_index][1])
+                                                    print("Valid")
+                                                else:
+                                                    print("Forgot opened curly bracket")
+                                                    index_of_variable = count_index
                                             else:
                                                 print("Forgot bracket")
                                                 index_of_variable = count_index
                                         else:
-                                            print("Invalid, expected an incremenet or decrement operator")
+                                            print("Invalid, expected an increment or decrement operator")
                                             index_of_variable = count_index
                                     else:
                                         print("Invalid, expected a variable")
@@ -160,6 +173,12 @@ while index_of_variable < len(token):
                 print("wrong syntax")
                 index_of_variable += 1
                 break
+    elif i[0] == "CLOSED_CURLY_BRACKET":
+        if brackets[len(brackets) - 1] == '{':
+            brackets.pop()
+            index_of_variable += 1
+        else:
+            print("error closed curly bracket without opened curly bracket")
     else:
         print(i)
         index_of_variable += 1
