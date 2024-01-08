@@ -5,6 +5,7 @@ def lexical_analysis(code):
     tokens = []
     token_types = {
         'LOGICAL_OPERATOR': r'(\&\&|\|\|)',
+        'LOGIC_OPERATOR': r'(\&|\|)',
         'INCREMENT_OPERATOR': r'\+\+',
         'DECREMENT_OPERATOR': r'\-\-',
         'ARITHMETIC_OPERATOR': r'(\+|\-|\*|\/|%)',
